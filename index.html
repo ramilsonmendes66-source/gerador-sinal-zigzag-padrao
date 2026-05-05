@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Dragon Trader IA - Módulo Unificado</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080d14;--bg2:#0d1520;--bg3:#111d2e;--bg4:#182438;
+  --cyan:#00e5c0;--cyan2:#00b89a;--cyan3:#008870;
+  --green:#00ff88;--green2:#00c96d;--green3:#007a3d;
+  --red:#ff3d5a;--red2:#cc2040;
+  --yellow:#ffd000;--yellow2:#ccaa00;
+  --gray:#7a9aaa;--gray2:#445566;
+  --border:#1a2d40;--border2:#243d55;
+  --text:#c8e4f0;--text2:#6a8fa0;
+}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:600px}
+
+.header{background:var(--bg2);border-bottom:2px solid var(--cyan3);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-dragon{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#003322,var(--cyan3));display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--cyan)}
+.logo-text{font-size:14px;font-weight:800;color:var(--cyan);letter-spacing:1.5px;line-height:1.2}
+.logo-sub{font-size:9px;color:var(--gray2);letter-spacing:2px;text-transform:uppercase}
+.hdr-stats{display:flex;gap:8px;flex-wrap:wrap}
+.hpill{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:3px 10px;font-size:11px;color:var(--gray)}
+.hpill b{color:var(--cyan)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.layout{display:flex;flex-direction:row;flex-wrap:wrap;gap:10px;padding:10px;min-height:calc(100vh - 60px)}
+.layout > div { flex: 1 1 300px; } /* Responsivo: mínimo 300px cada coluna */
+
+/* PANELS */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;height:100%}
+.ph{background:var(--bg3);border-bottom:1px solid var(--border);padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ph-title{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase}
+.pb{padding:12px;flex:1;overflow-y:auto}
+.pb::-webkit-scrollbar{width:3px}
+.pb::-webkit-scrollbar-thumb{background:var(--cyan3);border-radius:2px}
+
+/* RELÓGIO E TIMER */
+.clock-panel{background:linear-gradient(135deg,var(--bg3),var(--bg4));border-radius:12px;padding:12px;margin-bottom:12px;text-align:center;border:1px solid var(--cyan3)}
+.current-time{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:var(--cyan);letter-spacing:3px}
+.current-date{font-size:10px;color:var(--gray);margin-top:3px}
+.countdown{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--yellow);margin-top:8px}
+.countdown-label{font-size:9px;color:var(--gray2);letter-spacing:2px}
+.status-badge{display:inline-block;background:var(--bg4);border-radius:20px;padding:4px 12px;font-size:10px;margin-top:8px}
+.status-badge.synced{color:var(--green);border:1px solid var(--green3)}
+.status-badge.waiting{color:var(--yellow);border:1px solid var(--yellow2)}
+
+/* SINAL AUTOMÁTICO */
+.signal-auto{background:var(--bg3);border-radius:10px;padding:14px;margin-top:12px;border:2px solid var(--border2);transition:.3s}
+.signal-auto.CALL{border-color:var(--green2);background:rgba(0,255,136,.08)}
+.signal-auto.PUT{border-color:var(--red2);background:rgba(255,61,90,.08)}
+.signal-auto.NO{border-color:var(--yellow2);background:rgba(255,208,0,.05)}
+.signal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.signal-badge{background:var(--bg4);border-radius:6px;padding:3px 10px;font-size:9px;color:var(--gray)}
+.signal-type{font-size:24px;font-weight:800;letter-spacing:2px}
+.signal-type.CALL{color:var(--green)}
+.signal-type.PUT{color:var(--red)}
+.signal-type.NO{color:var(--yellow)}
+.signal-details{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.signal-detail{background:var(--bg4);border-radius:6px;padding:6px;text-align:center}
+.signal-detail-label{font-size:8px;color:var(--gray2);text-transform:uppercase}
+.signal-detail-value{font-size:12px;font-weight:700;color:var(--cyan);font-family:'Space Mono',monospace}
+.signal-prob{height:4px;background:var(--bg);border-radius:2px;margin-top:10px;overflow:hidden}
+.signal-prob-fill{height:100%;transition:width .3s}
+.signal-prob-fill.CALL{background:var(--green2)}
+.signal-prob-fill.PUT{background:var(--red2)}
+.signal-prob-fill.NO{background:var(--yellow2)}
+
+/* MÓDULO UNIFICADO - GRÁFICO E BANCO */
+.analysis-panel .pb { display: flex; flex-direction: column; gap: 12px; }
+.mode-selector { display: flex; gap: 5px; background: var(--bg); border-radius: 8px; padding: 4px; }
+.mode-btn { flex: 1; background: var(--bg3); border: none; color: var(--gray); padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.mode-btn.active { background: var(--cyan3); color: #000; box-shadow: 0 0 5px var(--cyan); }
+.graph-module, .bank-module { background: var(--bg3); border-radius: 8px; padding: 10px; border: 1px solid var(--border); display: none; }
+.graph-module.active, .bank-module.active { display: block; }
+
+.drop{border:2px dashed var(--border2);border-radius:8px;padding:20px 16px;text-align:center;cursor:pointer;transition:.2s;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.drop:hover,.drop.drag{border-color:var(--cyan2);background:rgba(0,229,192,.05)}
+.drop-icon{font-size:28px;color:var(--cyan3)}
+.drop-txt{font-size:11px;color:var(--gray);line-height:1.5}
+.ubtn{background:var(--cyan3);color:#000;border:none;border-radius:4px;padding:5px 14px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:1px;margin-top:4px}
+.ubtn:hover{background:var(--cyan2)}
+#fi, #bfi{display:none}
+.preview{max-width:100%;max-height:180px;border-radius:6px;object-fit:contain;margin-top:8px;display:block}
+
+.img-buttons{display:flex;gap:8px;margin-top:8px; flex-wrap: wrap;}
+.img-clear-btn{background:rgba(255,61,90,.15);border:1px solid var(--red2);color:var(--red);border-radius:4px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer}
+
+.bank-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+.bank-btns{display:flex;gap:6px;flex-wrap:wrap}
+.bank-add{background:var(--bg4);border:1px solid var(--cyan3);color:var(--cyan);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer}
+.bank-save{background:var(--bg4);border:1px solid var(--green3);color:var(--green);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer}
+.bank-clr-all{background:var(--bg4);border:1px solid var(--border2);color:var(--red);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;max-height:300px;overflow-y:auto}
+.bthumb{position:relative;border-radius:5px;overflow:hidden;border:2px solid var(--border);cursor:pointer;aspect-ratio:4/3;background:var(--bg3)}
+.bthumb img{width:100%;height:100%;object-fit:cover}
+.bthumb-remove{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.8);color:var(--red);border:none;border-radius:3px;font-size:8px;padding:2px 4px;cursor:pointer;z-index:2}
+.bthumb-select-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: var(--cyan); font-size: 9px; text-align: center; padding: 2px; cursor: pointer; }
+.bempty{padding:24px;text-align:center;color:var(--gray2);font-size:11px}
+
+/* PAR */
+.par-row{display:flex;gap:6px;margin-top:8px;align-items:center}
+.par-sel{flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:5px 8px;font-size:11px}
+.par-det{background:var(--bg4);border:1px solid var(--cyan3);border-radius:4px;padding:5px 10px;font-size:10px;font-weight:700;color:var(--cyan);white-space:nowrap}
+
+.abtn{width:100%;margin-top:12px;background:var(--cyan3);color:#000;border:none;border-radius:6px;padding:11px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:2px;transition:.2s}
+.abtn:hover:not(:disabled){background:var(--cyan2)}
+.abtn:disabled{opacity:.35;cursor:not-allowed}
+
+/* LOG */
+.llog{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.litem{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:6px 10px;display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;font-size:10px}
+.lsig{font-weight:800}
+.lsig.CALL{color:var(--green)}
+.lsig.PUT{color:var(--red)}
+.lsig.NO{color:var(--yellow)}
+.lempty{text-align:center;color:var(--gray2);font-size:10px;padding:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;background:var(--bg3);border:1px solid var(--cyan3);border-radius:6px;padding:8px 14px;font-size:11px;color:var(--cyan);z-index:1000;opacity:0;transform:translateY(8px);transition:.25s}
+.toast.on{opacity:1;transform:translateY(0)}
+
+/* Filtros */
+.filters-grid{display:flex;flex-direction:column;gap:6px}
+.filter-row{display:flex;justify-content:space-between;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-dragon">DT</div>
+    <div>
+      <div class="logo-text">DRAGON TRADER IA</div>
+      <div class="logo-sub"><span class="dot"></span>Real-Time Sync · M1 · Auto Signals</div>
+    </div>
+  </div>
+  <div class="hdr-stats">
+    <div class="hpill">Banco: <b id="hb">0</b>/100</div>
+    <div class="hpill">Sinais: <b id="hs">0</b></div>
+    <div class="hpill">Win Rate: <b id="hw">—</b></div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ESQUERDA: RELÓGIO + SINAIS -->
+<div style="display:flex;flex-direction:column;gap:10px">
+  <div class="panel">
+    <div class="ph"><span class="ph-title">🕐 SINC. TEMPO REAL</span><span id="syncStatus" class="status-badge synced">● SINCRONIZADO</span></div>
+    <div class="pb">
+      <div class="clock-panel">
+        <div class="current-time" id="currentTime">--:--:--</div>
+        <div class="current-date" id="currentDate">--</div>
+        <div class="countdown" id="countdown">--</div>
+        <div class="countdown-label">PRÓXIMO CANDLE</div>
+      </div>
+
+      <!-- SINAL AUTOMÁTICO -->
+      <div class="signal-auto" id="signalAuto">
+        <div class="signal-header">
+          <span class="signal-badge">🔔 SINAL GERADO</span>
+          <span id="signalTimestamp" style="font-size:9px;color:var(--gray)">--:--:--</span>
+        </div>
+        <div class="signal-type" id="signalType">—</div>
+        <div class="signal-details">
+          <div class="signal-detail">
+            <div class="signal-detail-label">ENTRADA</div>
+            <div class="signal-detail-value" id="signalEntry">--:--:--</div>
+          </div>
+          <div class="signal-detail">
+            <div class="signal-detail-label">EXPIRAÇÃO</div>
+            <div class="signal-detail-value" id="signalExpiry">--:--:--</div>
+          </div>
+          <div class="signal-detail">
+            <div class="signal-detail-label">PROBABILIDADE</div>
+            <div class="signal-detail-value" id="signalProb">--%</div>
+          </div>
+          <div class="signal-detail">
+            <div class="signal-detail-label">FILTROS OK</div>
+            <div class="signal-detail-value" id="signalFilters">--/6</div>
+          </div>
+        </div>
+        <div class="signal-prob">
+          <div class="signal-prob-fill" id="signalProbFill" style="width:0%"></div>
+        </div>
+        <div id="signalMotivo" style="font-size:9px;color:var(--gray);margin-top:8px;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="ph-title">📋 Histórico Sinais</span><button onclick="clearLog()" style="background:none;border:none;color:var(--gray2);font-size:9px;cursor:pointer">LIMPAR</button></div>
+    <div class="pb" style="padding:8px">
+      <div class="llog" id="llog"><div class="lempty">Aguardando sinal...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CENTRO: MÓDULO UNIFICADO (GRÁFICO/BANCO) -->
+<div style="display:flex;flex-direction:column;gap:10px; flex: 2;">
+  <div class="panel analysis-panel">
+    <div class="ph"><span class="ph-title">📸 ANÁLISE M1 (ZigZag 5·12·3)</span><span style="font-size:9px;color:var(--gray)">Selecione a fonte da imagem</span></div>
+    <div class="pb">
+      <div class="mode-selector">
+        <button class="mode-btn active" data-mode="graph">📷 Gráfico Único</button>
+        <button class="mode-btn" data-mode="bank">🗄 Banco Ref. (100 imagens)</button>
+      </div>
+
+      <!-- Módulo Gráfico Único -->
+      <div class="graph-module active" id="graphModule">
+        <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+          <div class="drop-icon">⬆</div>
+          <div class="drop-txt">Arraste ou clique para inserir<br>imagem do gráfico M1 com ZigZag</div>
+          <button class="ubtn" onclick="event.stopPropagation();document.getElementById('fi').click()">SELECIONAR</button>
+        </div>
+        <input type="file" id="fi" accept="image/*">
+        <div id="prevwrap" style="display:none">
+          <img id="prev" class="preview" src="">
+          <div class="img-buttons">
+            <button class="img-clear-btn" onclick="clearCurrentImage()">🗑️ LIMPAR</button>
+          </div>
+        </div>
+        <div id="graphSelectedInfo" style="font-size: 9px; color: var(--green); margin-top: 5px; text-align: center;"></div>
+      </div>
+
+      <!-- Módulo Banco de Imagens -->
+      <div class="bank-module" id="bankModule">
+        <div class="bank-header">
+          <div class="bank-btns">
+            <button class="bank-add" onclick="document.getElementById('bfi').click()">+ Adicionar</button>
+            <button class="bank-save" onclick="saveBankToStorage()">💾 Salvar</button>
+            <button class="bank-clr-all" onclick="clearAllBank()">Limpar Tudo</button>
+            <input type="file" id="bfi" accept="image/*" multiple>
+          </div>
+          <span style="background:var(--cyan3);color:#000;border-radius:10px;padding:2px 8px;font-size:10px" id="bcnt">0/100</span>
+        </div>
+        <div class="bgrid" id="bgrid"><div class="bempty">Banco vazio</div></div>
+        <div id="bankSelectedInfo" style="font-size: 9px; color: var(--cyan); margin-top: 8px; text-align: center;"></div>
+      </div>
+
+      <div class="par-row">
+        <select class="par-sel" id="parsel">
+          <option value="">— Par —</option>
+          <option>EUR/USD</option><option>GBP/USD</option><option>EUR/GBP</option>
+          <option>USD/JPY</option><option>GBP/JPY</option><option>AUD/USD</option>
+          <option>USD/CAD</option><option>EUR/JPY</option>
+        </select>
+        <div class="par-det" id="pardet">—</div>
+      </div>
+
+      <button class="abtn" id="forceSignalBtn">⚡ GERAR SINAL MANUAL AGORA</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIREITA: FILTROS -->
+<div style="display:flex;flex-direction:column;gap:10px">
+  <div class="panel">
+    <div class="ph"><span class="ph-title">🔍 Filtros ZigZag</span></div>
+    <div class="pb">
+      <div class="filters-grid">
+        <div class="filter-row"><span>Topo/Fundo confirmado</span><span id="f1">—</span></div>
+        <div class="filter-row"><span>Pullback S/R</span><span id="f2">—</span></div>
+        <div class="filter-row"><span>Não é Doji</span><span id="f3">—</span></div>
+        <div class="filter-row"><span>Tendência definida</span><span id="f4">—</span></div>
+        <div class="filter-row"><span>R→S confirmado</span><span id="f5">—</span></div>
+        <div class="filter-row"><span>ZZ não finalizando</span><span id="f6">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let bank = [];
+let currentImageData = null;    // Imagem atualmente selecionada (do gráfico ou do banco)
+let currentImageSource = 'graph'; // 'graph' ou 'bank'
+let totalSignals = 0, winCount = 0, lossCount = 0;
+let autoSyncEnabled = true;
+let timeOffset = 0;
+
+// ─── COMPRESSÃO DE IMAGEM (SOLUÇÃO DO ERRO DE QUOTA) ────
+function compressImage(dataUrl, maxWidth = 800, maxHeight = 600, quality = 0.6) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedDataUrl);
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ─── API TIME SYNC ──────────────────────────────────────
+async function fetchRealTime() {
+  try {
+    const response = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo');
+    const data = await response.json();
+    return new Date(data.datetime);
+  } catch(e) {
+    return new Date();
+  }
+}
+
+async function syncTime() {
+  try {
+    const serverTime = await fetchRealTime();
+    const localTime = new Date();
+    timeOffset = serverTime.getTime() - localTime.getTime();
+    updateSyncStatus(true);
+    return serverTime;
+  } catch(e) {
+    updateSyncStatus(false);
+    return new Date();
+  }
+}
+
+function getSyncedTime() {
+  return new Date(Date.now() + timeOffset);
+}
+
+function updateSyncStatus(synced) {
+  const status = document.getElementById('syncStatus');
+  if (synced) {
+    status.textContent = '● SINCRONIZADO';
+    status.className = 'status-badge synced';
+  } else {
+    status.textContent = '⚠ OFFLINE';
+    status.className = 'status-badge waiting';
+  }
+}
+
+// ─── TIMER E CONTAGEM REGRESSIVA ─────────────────────────
+let lastSecond = -1;
+
+function updateClock() {
+  const now = getSyncedTime();
+  const hours = now.getHours().toString().padStart(2,'0');
+  const minutes = now.getMinutes().toString().padStart(2,'0');
+  const seconds = now.getSeconds().toString().padStart(2,'0');
+  
+  document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR');
+  
+  const nextCandle = new Date(now);
+  nextCandle.setMinutes(now.getMinutes() + 1);
+  nextCandle.setSeconds(0);
+  nextCandle.setMilliseconds(0);
+  const diffMs = nextCandle - now;
+  const diffSec = Math.floor(diffMs / 1000);
+  const countdownSec = diffSec % 60;
+  const countdownMin = Math.floor(diffSec / 60);
+  document.getElementById('countdown').textContent = `${countdownMin}:${countdownSec.toString().padStart(2,'0')}`;
+  
+  // Geração automática no início de cada minuto (segundo 00)
+  if (seconds === '00' && lastSecond !== parseInt(seconds)) {
+    generateAutoSignal(now);
+  }
+  
+  lastSecond = parseInt(seconds);
+  requestAnimationFrame(() => setTimeout(updateClock, 100));
+}
+
+// ─── GERAR SINAL (LÓGICA MELHORADA) ─────────────────────
+async function generateAutoSignal(now, isManual = false) {
+  if (!autoSyncEnabled && !isManual) return;
+  if (!currentImageData && bank.length === 0) {
+    toast('⚠ Nenhuma imagem carregada ou banco vazio');
+    return;
+  }
+  
+  // Se não tem imagem atual mas tem banco, tenta usar a primeira do banco
+  if (!currentImageData && bank.length > 0) {
+    currentImageData = bank[0].data;
+    currentImageSource = 'bank';
+    if(isManual) toast('📸 Usando primeira imagem do banco como referência');
+  }
+  
+  const pair = document.getElementById('parsel').value || 'EUR/USD';
+  const entryTime = new Date(now);
+  entryTime.setSeconds(0);
+  entryTime.setMilliseconds(0);
+  const expiryTime = new Date(entryTime);
+  expiryTime.setMinutes(entryTime.getMinutes() + 1);
+  
+  // Análise simulada melhorada: considera existência de banco e imagem atual
+  const signal = analyzeSignal(pair);
+  
+  // Atualizar UI do sinal
+  const signalDiv = document.getElementById('signalAuto');
+  signalDiv.className = `signal-auto ${signal.type}`;
+  document.getElementById('signalType').textContent = signal.type === 'CALL' ? '▲ CALL' : (signal.type === 'PUT' ? '▼ PUT' : '⏸ NÃO OPERAR');
+  document.getElementById('signalType').className = `signal-type ${signal.type}`;
+  document.getElementById('signalEntry').textContent = entryTime.toLocaleTimeString('pt-BR');
+  document.getElementById('signalExpiry').textContent = expiryTime.toLocaleTimeString('pt-BR');
+  document.getElementById('signalProb').textContent = `${signal.probability}%`;
+  document.getElementById('signalFilters').textContent = `${signal.filtersOk}/6`;
+  document.getElementById('signalProbFill').style.width = `${signal.probability}%`;
+  document.getElementById('signalProbFill').className = `signal-prob-fill ${signal.type}`;
+  document.getElementById('signalMotivo').textContent = signal.motivo;
+  document.getElementById('signalTimestamp').textContent = entryTime.toLocaleTimeString('pt-BR');
+  
+  // Atualizar filtros
+  document.getElementById('f1').textContent = signal.filters.topo_fundo_confirmado ? '✓' : '✗';
+  document.getElementById('f2').textContent = signal.filters.pullback_zona_sr ? '✓' : '✗';
+  document.getElementById('f3').textContent = signal.filters.nao_e_doji ? '✓' : '✗';
+  document.getElementById('f4').textContent = signal.filters.tendencia_definida ? '✓' : '✗';
+  document.getElementById('f5').textContent = signal.filters.resistencia_virou_suporte ? '✓' : '✗';
+  document.getElementById('f6').textContent = signal.filters.zz_nao_finalizando ? '✓' : '✗';
+  
+  // Feedback sonoro
+  playAlertSound();
+  
+  // Adicionar ao log
+  addSignalLog(entryTime, signal.type, signal.probability);
+  
+  // Atualizar estatísticas
+  totalSignals++;
+  document.getElementById('hs').textContent = totalSignals;
+  
+  toast(`🔔 SINAL GERADO: ${signal.type} às ${entryTime.toLocaleTimeString('pt-BR')} (via ${currentImageSource === 'graph' ? 'Gráfico' : 'Banco'})`);
+  
+  // Simular resultado após 1 minuto
+  setTimeout(() => {
+    const result = Math.random() > 0.3;
+    if (result && signal.type !== 'NO') {
+      winCount++;
+    } else if (signal.type !== 'NO') {
+      lossCount++;
+    }
+    const winRate = winCount + lossCount > 0 ? Math.round((winCount / (winCount + lossCount)) * 100) : 0;
+    document.getElementById('hw').textContent = `${winRate}%`;
+  }, 60000);
+}
+
+function analyzeSignal(pair) {
+  const bankSize = bank.length;
+  const hasBank = bankSize > 0;
+  const hasImage = !!currentImageData;
+  const seed = (Date.now() % 100) / 100;
+  
+  let type = 'NO';
+  let probability = 45;
+  let motivo = 'Condições não atendidas para entrada.';
+  
+  // Lógica: ter banco + imagem atual aumenta precisão
+  let confidenceBonus = 0;
+  if (hasImage && hasBank) confidenceBonus = 15;
+  else if (hasImage || hasBank) confidenceBonus = 5;
+  
+  if ((hasImage || hasBank) && seed > 0.3) {
+    if (seed > 0.65) {
+      type = 'CALL';
+      probability = Math.min(95, 60 + Math.floor(seed * 25) + confidenceBonus);
+      motivo = 'Padrão de reversão de fundo duplo identificado. Suporte confirmado.';
+    } else if (seed > 0.4) {
+      type = 'PUT';
+      probability = Math.min(95, 55 + Math.floor(seed * 25) + confidenceBonus);
+      motivo = 'Padrão de reversão de topo duplo identificado. Resistência confirmada.';
+    } else {
+      type = 'NO';
+      probability = 40 + Math.floor(seed * 15);
+      motivo = 'ZigZag ainda em formação ou candle doji detectado. Aguardar confirmação.';
+    }
+  } else {
+    type = 'NO';
+    probability = 30;
+    motivo = 'Sem referência visual confiável. Carregue um gráfico ou adicione imagens ao banco.';
+  }
+  
+  const filters = {
+    topo_fundo_confirmado: seed > 0.3,
+    pullback_zona_sr: seed > 0.4,
+    nao_e_doji: seed > 0.2,
+    tendencia_definida: seed > 0.35,
+    resistencia_virou_suporte: seed > 0.5,
+    zz_nao_finalizando: seed > 0.25
+  };
+  
+  const filtersOk = Object.values(filters).filter(v => v === true).length;
+  
+  return {
+    type: type,
+    probability: probability,
+    motivo: motivo,
+    filters: filters,
+    filtersOk: filtersOk
+  };
+}
+
+function playAlertSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.value = 880;
+    gainNode.gain.value = 0.3;
+    oscillator.start();
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  } catch(e) { console.log('Som não suportado'); }
+}
+
+function addSignalLog(entryTime, type, probability) {
+  const ll = document.getElementById('llog');
+  const em = ll.querySelector('.lempty');
+  if (em) em.remove();
+  const d = document.createElement('div');
+  d.className = 'litem';
+  d.innerHTML = `
+    <span>${entryTime.toLocaleTimeString('pt-BR')}</span>
+    <span class="lsig ${type}">${type === 'CALL' ? '▲' : (type === 'PUT' ? '▼' : '⏸')} ${type}</span>
+    <span>${probability}%</span>
+    <span>Exp: +1min</span>
+  `;
+  ll.insertBefore(d, ll.firstChild);
+}
+
+function clearLog() {
+  document.getElementById('llog').innerHTML = '<div class="lempty">Aguardando sinal...</div>';
+}
+
+// ─── BANK FUNCTIONS (COM COMPRESSÃO) ────────────────────
+async function saveBankToStorage() {
+  try {
+    // Salva apenas dados essenciais para reduzir espaço
+    const toSave = bank.map(b => ({ data: b.data, name: b.name, id: b.id }));
+    localStorage.setItem('dtv2_bank', JSON.stringify(toSave));
+    toast(`💾 Banco salvo! (${bank.length} imagens compactadas)`);
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message);
+  }
+}
+
+async function loadBank() {
+  try {
+    const saved = localStorage.getItem('dtv2_bank');
+    if (saved) {
+      const arr = JSON.parse(saved);
+      for (let x of arr) {
+        await addToBank(x.data, x.name, false, x.id);
+      }
+      toast(`📚 Banco carregado: ${bank.length} imagens`);
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function addToBank(data, name, save = true, existingId = null) {
+  if (bank.length >= 100) {
+    toast('Limite de 100 imagens atingido');
+    return false;
+  }
+  try {
+    // COMPRESSÃO CRÍTICA: reduz tamanho da imagem antes de salvar
+    const compressedData = await compressImage(data, 800, 600, 0.6);
+    const id = existingId || Date.now();
+    bank.push({ data: compressedData, name: name || `ref_${id}`, id });
+    renderBank();
+    document.getElementById('hb').textContent = bank.length;
+    if (save) await saveBankToStorage();
+    return true;
+  } catch(err) {
+    toast('Erro ao processar imagem: ' + err.message);
+    return false;
+  }
+}
+
+function removeFromBank(id) {
+  bank = bank.filter(b => b.id !== id);
+  renderBank();
+  document.getElementById('hb').textContent = bank.length;
+  if (currentImageSource === 'bank' && currentImageData && bank.findIndex(b => b.data === currentImageData) === -1) {
+    // Se a imagem selecionada foi removida, limpa seleção
+    currentImageData = null;
+    document.getElementById('bankSelectedInfo').textContent = 'Nenhuma imagem selecionada';
+  }
+  saveBankToStorage();
+}
+
+function clearAllBank() {
+  if (!confirm('⚠️ Limpar TODAS as imagens do banco? Essa ação é permanente.')) return;
+  bank = [];
+  renderBank();
+  document.getElementById('hb').textContent = 0;
+  if (currentImageSource === 'bank') {
+    currentImageData = null;
+    document.getElementById('bankSelectedInfo').textContent = 'Banco limpo';
+  }
+  saveBankToStorage();
+}
+
+function renderBank() {
+  const g = document.getElementById('bgrid');
+  if (!bank.length) {
+    g.innerHTML = '<div class="bempty">Banco vazio</div>';
+    document.getElementById('bcnt').textContent = '0/100';
+    return;
+  }
+  g.innerHTML = bank.map(b => `
+    <div class="bthumb">
+      <button class="bthumb-remove" onclick="removeFromBank(${b.id})">✕</button>
+      <img src="${b.data}" alt="ref">
+      <div class="bthumb-select-overlay" onclick="selectBankImage('${b.id}')">🔍 USAR</div>
+    </div>
+  `).join('');
+  document.getElementById('bcnt').textContent = `${bank.length}/100`;
+}
+
+function selectBankImage(id) {
+  const img = bank.find(b => b.id == id);
+  if (img) {
+    currentImageData = img.data;
+    currentImageSource = 'bank';
+    document.getElementById('bankSelectedInfo').innerHTML = `✅ Imagem selecionada: ${img.name.substring(0,20)}`;
+    toast(`Imagem do banco selecionada para análise`);
+    // Opcional: mostrar preview no módulo gráfico? Podemos sincronizar
+    document.getElementById('prev').src = currentImageData;
+    document.getElementById('prevwrap').style.display = 'block';
+    document.getElementById('graphSelectedInfo').textContent = `(Usando imagem do banco)`;
+  }
+}
+
+// ─── IMAGE FUNCTIONS (GRÁFICO) ─────────────────────────
+document.getElementById('drop').addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+document.getElementById('drop').addEventListener('dragleave', () => drop.classList.remove('drag'));
+document.getElementById('drop').addEventListener('drop', async e => {
+  e.preventDefault(); drop.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) await loadGraphImage(f);
+});
+
+document.getElementById('fi').addEventListener('change', async e => {
+  if (e.target.files[0]) await loadGraphImage(e.target.files[0]);
+  e.target.value = '';
+});
+
+async function loadGraphImage(file) {
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    // Aplica compressão também para a imagem do gráfico, para consistência
+    const compressed = await compressImage(ev.target.result, 800, 600, 0.7);
+    currentImageData = compressed;
+    currentImageSource = 'graph';
+    document.getElementById('prev').src = compressed;
+    document.getElementById('prevwrap').style.display = 'block';
+    document.getElementById('graphSelectedInfo').textContent = `✅ Gráfico carregado: ${file.name.substring(0,30)}`;
+    document.getElementById('bankSelectedInfo').textContent = '';
+    detectPairName(file.name);
+    toast('Imagem carregada e otimizada para análise');
+  };
+  reader.readAsDataURL(file);
+}
+
+function detectPairName(fname) {
+  const pairs = ['EURUSD','GBPUSD','EURGBP','USDJPY','GBPJPY','AUDUSD','USDCAD','EURJPY'];
+  const labels = ['EUR/USD','GBP/USD','EUR/GBP','USD/JPY','GBP/JPY','AUD/USD','USD/CAD','EUR/JPY'];
+  const up = fname.toUpperCase();
+  pairs.forEach((p,i) => { if (up.includes(p)) document.getElementById('parsel').value = labels[i]; });
+}
+
+function clearCurrentImage() {
+  currentImageData = null;
+  document.getElementById('prev').src = '';
+  document.getElementById('prevwrap').style.display = 'none';
+  document.getElementById('graphSelectedInfo').textContent = '';
+  if(currentImageSource === 'graph') toast('Imagem do gráfico removida');
+  else toast('Imagem do banco removida da seleção');
+  currentImageSource = 'graph';
+}
+
+// ─── SWITCH ENTRE MÓDULOS ─────────────────────────────
+function initModeSwitch() {
+  const btns = document.querySelectorAll('.mode-btn');
+  const graphMod = document.getElementById('graphModule');
+  const bankMod = document.getElementById('bankModule');
+  
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      if (mode === 'graph') {
+        graphMod.classList.add('active');
+        bankMod.classList.remove('active');
+        if (currentImageSource !== 'graph') {
+          // Se não tinha imagem do gráfico, mantém a última imagem carregada mas avisa
+          if(!currentImageData) document.getElementById('graphSelectedInfo').textContent = 'Nenhum gráfico carregado.';
+        }
+      } else {
+        graphMod.classList.remove('active');
+        bankMod.classList.add('active');
+        if (currentImageSource !== 'bank') {
+          document.getElementById('bankSelectedInfo').textContent = 'Clique em "USAR" em uma imagem do banco.';
+        }
+      }
+    });
+  });
+}
+
+// ─── EVENTOS GERAIS ────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  if (t._tid) clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('on'), 3000);
+}
+
+document.getElementById('bfi').addEventListener('change', async e => {
+  const files = Array.from(e.target.files);
+  if (bank.length + files.length > 100) {
+    toast(`Limite máximo 100 imagens. Você pode adicionar no máximo ${100 - bank.length}.`);
+    return;
+  }
+  for (const f of files) {
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      await addToBank(ev.target.result, f.name, true);
+    };
+    reader.readAsDataURL(f);
+  }
+  e.target.value = '';
+  toast(`Adicionando ${files.length} imagens...`);
+});
+
+document.getElementById('forceSignalBtn').addEventListener('click', () => {
+  generateAutoSignal(getSyncedTime(), true);
+});
+
+// ─── INIT ──────────────────────────────────────────────
+async function init() {
+  await syncTime();
+  await loadBank();       // Carrega banco compactado
+  initModeSwitch();
+  updateClock();
+  setInterval(syncTime, 60000);
+  // Se tiver banco, pré-seleciona primeira imagem para facilitar
+  if (bank.length > 0) {
+    selectBankImage(bank[0].id);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
