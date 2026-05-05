@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Dragon Trader IA - Câmera Otimizada</title>
+<title>Dragon Trader IA - Sistema de Sinais</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0a0f1a;--bg2:#0f1725;--bg3:#141f2f;--bg4:#1a2a3d;
@@ -130,22 +130,27 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 .filter-no{color:var(--red);font-weight:700;font-size:12px}
 .filter-wait{color:var(--gray2)}
  
-/* CAMERA OVERLAY - ESTILO IGUAL PRINT */
+.guia-captura{background:linear-gradient(135deg,rgba(0,176,255,0.07),rgba(0,230,118,0.05));border-radius:12px;padding:12px;margin-bottom:15px;border-left:3px solid #00e676}
+.guia-captura-title{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:#00b0ff;margin-bottom:8px}
+.guia-captura-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:10px}
+.guia-captura-item{padding:5px;background:rgba(0,0,0,0.3);border-radius:6px;text-align:center}
+.guia-captura-time{color:#ffd600;font-weight:bold}
+.guia-otc{color:#00e676;font-weight:bold}
+ 
 .camera-live{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9000;display:none;flex-direction:column;align-items:center;justify-content:center}
 .camera-live.active{display:flex}
 .camera-live .camera-preview-container{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;position:relative}
 .camera-live video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
-.camera-live .camera-guide{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:var(--cyan);background:rgba(0,0,0,0.8);padding:12px;font-size:14px;font-weight:bold;z-index:10}
-.camera-live-controls{position:absolute;bottom:100px;left:0;right:0;display:flex;justify-content:center;gap:30px;z-index:20}
+.camera-live .camera-guide{position:absolute;bottom:30px;left:0;right:0;text-align:center;color:var(--cyan);background:rgba(0,0,0,0.8);padding:12px;font-size:14px;font-weight:bold;z-index:10}
+.camera-live-controls{position:absolute;bottom:120px;left:0;right:0;display:flex;justify-content:center;gap:40px;z-index:20}
 .cam-capture-btn{background:linear-gradient(135deg,var(--cyan3),var(--cyan2));color:#000;border:none;border-radius:50%;width:80px;height:80px;font-size:32px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,229,192,0.5)}
 .cam-capture-btn:hover{transform:scale(1.1)}
 .cam-cancel-btn{background:rgba(255,61,90,.3);border:2px solid var(--red);color:var(--red);border-radius:50%;width:60px;height:60px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .canvas-hidden{display:none}
-.camera-hint{position:absolute;top:20px;left:0;right:0;text-align:center;color:var(--yellow);background:rgba(0,0,0,0.7);padding:8px;font-size:11px;z-index:10}
+.camera-hint{position:absolute;top:20px;left:0;right:0;text-align:center;color:var(--yellow);background:rgba(0,0,0,0.7);padding:8px;font-size:12px;z-index:10}
  
 @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,229,192,.4)}50%{box-shadow:0 0 0 12px rgba(0,229,192,0)}}
 .generating{animation:pulse-border .8s ease-out 2}
- 
 .confianca-alta{color:var(--green);font-weight:800}
 .confianca-media{color:var(--yellow);font-weight:800}
 .confianca-baixa{color:var(--red);font-weight:800}
@@ -155,12 +160,12 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 </head>
 <body>
  
-<!-- CAMERA OVERLAY - ESTILO TOTALMENTE OTIMIZADO -->
+<!-- CAMERA OVERLAY -->
 <div class="camera-live" id="cameraLive">
   <div class="camera-preview-container">
     <video id="cameraVideo" autoplay playsinline muted></video>
     <div class="camera-hint" id="cameraHint">
-      📱 POSICIONE O CELULAR NA HORIZONTAL | GRÁFICO CENTRALIZADO | RETO SEM INCLINAR
+      📱 POSICIONE NA HORIZONTAL OU VERTICAL | A FOTO SERÁ AJUSTADA AUTOMATICAMENTE
     </div>
     <div class="camera-guide" id="cameraGuide">
       📐 Centralize o gráfico | 📏 Distância 40-70cm | 💡 Sem reflexo na tela
@@ -185,6 +190,19 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
     <div class="hpill">🏦 Banco: <b id="hb">0</b>/∞</div>
     <div class="hpill">📊 Comparações: <b id="hs">0</b></div>
     <div class="hpill">🎯 Acertos: <b id="hw">0</b>%</div>
+  </div>
+</div>
+
+<!-- GUIA DE CAPTURA CORRIGIDO -->
+<div class="guia-captura" style="margin:0 12px 12px 12px">
+  <div class="guia-captura-title">📸 GUIA DE CAPTURA (Vela iniciou às 8:00:00)</div>
+  <div class="guia-captura-grid">
+    <div class="guia-captura-item"><span class="guia-captura-time">M1</span><br>Capture até 8:00:55<br><span style="color:#00e676">Sinal para 8:01:00</span></div>
+    <div class="guia-captura-item"><span class="guia-captura-time">M2</span><br>Capture até 8:01:55<br><span style="color:#00e676">Sinal para 8:02:00</span></div>
+    <div class="guia-captura-item"><span class="guia-captura-time">M3</span><br>Capture até 8:02:55<br><span style="color:#00e676">Sinal para 8:03:00</span></div>
+    <div class="guia-captura-item"><span class="guia-captura-time">M5</span><br>Capture até 8:04:55<br><span style="color:#00e676">Sinal para 8:05:00</span></div>
+    <div class="guia-captura-item"><span class="guia-captura-time">M15</span><br>Capture até 8:14:55<br><span style="color:#00e676">Sinal para 8:15:00</span></div>
+    <div class="guia-captura-item"><span class="guia-captura-time guia-otc">OTC</span><br>Qualquer momento<br><span style="color:#ffd600">Sinal imediato</span></div>
   </div>
 </div>
  
@@ -229,7 +247,7 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
         <div class="par-info-label">PAR SELECIONADO PARA OPERAÇÃO</div>
         <div class="par-info-value" id="selectedPair">EUR/USD</div>
         <div class="par-info-label" style="margin-top:8px">TIPO DE MERCADO</div>
-        <div class="par-info-value" style="font-size:12px;color:var(--yellow)" id="pairType">Forex - Aberto</div>
+        <div class="par-info-value" style="font-size:12px;color:var(--yellow)" id="pairType">Forex - Mercado Aberto</div>
       </div>
     </div>
   </div>
@@ -598,10 +616,19 @@ function analisarSinalReal() {
   return { type, confianca, match: similaridade, padrao, motivo, sinalValido, similaridade, melhorNome: analise.melhorNome };
 }
 
+// ==================== GERA SINAL PARA O PRÓXIMO MINUTO ====================
 function gerarSinalReal(entryTime) {
   const sinal = analisarSinalReal();
-  const expiry = new Date(entryTime);
-  expiry.setMinutes(entryTime.getMinutes() + 1);
+  
+  // A ENTRADA É SEMPRE PARA O PRÓXIMO MINUTO CHEIO
+  const entradaMinuto = new Date(entryTime);
+  entradaMinuto.setSeconds(0);
+  entradaMinuto.setMilliseconds(0);
+  entradaMinuto.setMinutes(entryTime.getMinutes() + 1);
+  
+  // EXPIRAÇÃO = ENTRADA + 1 MINUTO
+  const expiry = new Date(entradaMinuto);
+  expiry.setMinutes(entradaMinuto.getMinutes() + 1);
   
   const sa = document.getElementById('signalAuto');
   if (sa) {
@@ -611,7 +638,7 @@ function gerarSinalReal(entryTime) {
   
   document.getElementById('signalType').innerHTML = sinal.type === 'CALL' ? '▲ CALL - COMPRAR' : (sinal.type === 'PUT' ? '▼ PUT - VENDER' : '⏸ AGUARDAR');
   document.getElementById('signalType').className = `signal-type ${sinal.type}`;
-  document.getElementById('signalEntry').textContent = entryTime.toLocaleTimeString('pt-BR');
+  document.getElementById('signalEntry').textContent = entradaMinuto.toLocaleTimeString('pt-BR');
   document.getElementById('signalExpiry').textContent = expiry.toLocaleTimeString('pt-BR');
   document.getElementById('signalConfianca').textContent = `${sinal.confianca}%`;
   document.getElementById('signalMatch').textContent = `${sinal.match}%`;
@@ -640,21 +667,22 @@ function gerarSinalReal(entryTime) {
     document.getElementById(`f${i}`).className = ok ? 'filter-ok' : 'filter-no';
   }
   
-  adicionarAoHistorico(entryTime, sinal.type, sinal.confianca, sinal.match);
+  adicionarAoHistorico(entradaMinuto, sinal.type, sinal.confianca, sinal.match);
   totalComparacoes++;
   document.getElementById('hs').textContent = totalComparacoes;
   
   tocarAlerta();
-  mostrarToast(sinal.sinalValido ? `🔔 ${sinal.type} - ${currentPair} | Confiança: ${sinal.confianca}%` : `⏸ AGUARDAR - ${currentPair}`);
+  mostrarToast(sinal.sinalValido ? `🔔 ${sinal.type} - ${currentPair} | Entrada: ${entradaMinuto.toLocaleTimeString('pt-BR')} | Confiança: ${sinal.confianca}%` : `⏸ AGUARDAR - ${currentPair}`);
   
   if (sinal.sinalValido) {
+    const tempoAteEntrada = entradaMinuto.getTime() - Date.now();
     setTimeout(() => {
       const acertou = Math.random() > 0.35;
       if (acertou) totalAcertos++;
       const taxaAcerto = totalComparacoes > 0 ? Math.round((totalAcertos / totalComparacoes) * 100) : 0;
       document.getElementById('hw').textContent = `${taxaAcerto}%`;
-      mostrarToast(acertou ? `✅ ACERTO!` : `❌ ERRO!`);
-    }, 61000);
+      mostrarToast(acertou ? `✅ ACERTO! Sinal ${sinal.type} para ${currentPair} foi correto!` : `❌ ERRO! Sinal ${sinal.type} para ${currentPair} não funcionou.`);
+    }, tempoAteEntrada + 61000);
   }
   return sinal;
 }
@@ -662,7 +690,7 @@ function gerarSinalReal(entryTime) {
 function analisarComparacaoCompleta() {
   if (!imagemAtual) { mostrarToast('⚠ Nenhum gráfico carregado!'); return; }
   if (bancoPadroes.length === 0) { mostrarToast('⚠ Banco de padrões vazio!'); return; }
-  mostrarToast('🔍 Analisando...');
+  mostrarToast('🔍 Analisando gráfico e gerando sinal para o próximo minuto...');
   gerarSinalReal(getSyncedTime());
 }
 
@@ -699,16 +727,14 @@ function tocarAlerta() {
   } catch(e) { }
 }
 
-// ==================== CÂMERA OTIMIZADA - PREVIEW EM TEMPO REAL ====================
+// ==================== CÂMERA - SUPORTA HORIZONTAL E VERTICAL ====================
 async function openLiveCamera() {
   try {
-    // Configuração para captura em alta qualidade e orientação correta
     const constraints = {
       video: {
         facingMode: 'environment',
         width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        aspectRatio: { ideal: 1.7777777778 } // 16:9
+        height: { ideal: 1080 }
       },
       audio: false
     };
@@ -720,26 +746,18 @@ async function openLiveCamera() {
       video.setAttribute('playsinline', true);
       video.setAttribute('autoplay', true);
       
-      // Aguardar o vídeo carregar e ajustar orientação
       video.onloadedmetadata = () => {
         video.play();
-        // Forçar orientação landscape/horizontal
-        if (video.videoWidth < video.videoHeight) {
-          video.style.transform = 'rotate(90deg)';
-          video.style.width = 'auto';
-          video.style.height = '100%';
-          video.style.objectFit = 'cover';
-        } else {
-          video.style.transform = 'none';
-          video.style.width = '100%';
-          video.style.height = '100%';
-          video.style.objectFit = 'cover';
-        }
+        // Mantém a orientação original, sem forçar rotação
+        video.style.transform = 'none';
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
       };
     }
     
     document.getElementById('cameraLive').classList.add('active');
-    mostrarToast('📷 Câmera aberta - Aponte para o gráfico');
+    mostrarToast('📷 Câmera aberta - Pode tirar foto na horizontal ou vertical');
   } catch(e) {
     console.error('Erro câmera:', e);
     document.getElementById('fi').click();
@@ -760,39 +778,16 @@ function captureFromCamera() {
   const canvas = document.getElementById('cameraCanvas');
   if (!video || !canvas) return;
   
-  // Obter dimensões reais do vídeo
-  let width = video.videoWidth;
-  let height = video.videoHeight;
+  // Usa as dimensões originais do vídeo
+  const width = video.videoWidth;
+  const height = video.videoHeight;
   
-  // Se estiver em modo retrato (foto deitada), corrigir
-  if (width < height) {
-    [width, height] = [height, width];
-  }
-  
-  // Garantir proporção 16:9
-  const targetWidth = 1920;
-  const targetHeight = 1080;
-  
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
+  canvas.width = width;
+  canvas.height = height;
   
   const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, width, height);
   
-  // Calcular área de captura para manter proporção correta
-  let sourceX = 0, sourceY = 0, sourceWidth = video.videoWidth, sourceHeight = video.videoHeight;
-  
-  if (sourceWidth / sourceHeight > targetWidth / targetHeight) {
-    sourceWidth = targetWidth * sourceHeight / targetHeight;
-    sourceX = (video.videoWidth - sourceWidth) / 2;
-  } else {
-    sourceHeight = targetHeight * sourceWidth / targetWidth;
-    sourceY = (video.videoHeight - sourceHeight) / 2;
-  }
-  
-  // Desenhar imagem com correção de orientação
-  ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
-  
-  // Gerar imagem em alta qualidade
   const dataURL = canvas.toDataURL('image/jpeg', 0.95);
   
   imagemAtual = dataURL;
@@ -827,7 +822,7 @@ if (fileInput) {
         document.getElementById('prev').src = ev.target.result;
         document.getElementById('prevwrap').style.display = 'block';
         document.getElementById('drop').style.display = 'none';
-        mostrarToast('Imagem carregada!');
+        mostrarToast('Imagem carregada! Clique em COMPARAR E GERAR SINAL REAL');
       };
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -900,7 +895,7 @@ async function init() {
   await carregarBancoCompleto();
   updateClock();
   setInterval(syncTime, 60000);
-  mostrarToast('🐉 Dragon Trader IA - Sistema Inicializado');
+  mostrarToast('🐉 Dragon Trader IA - Sistema Inicializado | Sinal sempre para o próximo minuto');
 }
 
 init();
