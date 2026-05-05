@@ -73,8 +73,10 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
  
 .camera-section{margin-bottom:15px}
 .cam-btns{display:flex;gap:8px;margin-bottom:10px}
-.cam-btn{flex:1;background:var(--bg3);border:1.5px solid var(--cyan3);color:var(--cyan);border-radius:8px;padding:10px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.cam-btn{flex:1;background:var(--bg3);border:1.5px solid var(--cyan3);color:var(--cyan);border-radius:8px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .cam-btn:hover{background:rgba(0,229,192,.15);transform:scale(1.02)}
+.cam-btn-primary{background:linear-gradient(135deg,var(--cyan3),var(--cyan2));color:#000;border:none}
+.cam-btn-primary:hover{background:linear-gradient(135deg,var(--cyan2),var(--cyan));transform:scale(1.02)}
 .drop{border:2px dashed var(--border2);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .drop:hover,.drop.drag{border-color:var(--cyan2);background:rgba(0,229,192,.08)}
 .drop-icon{font-size:28px;color:var(--cyan3)}
@@ -131,12 +133,14 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
  
 .camera-live{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9000;display:none;flex-direction:column;align-items:center;justify-content:center}
 .camera-live.active{display:flex}
-.camera-live video{width:100%;max-height:70vh;object-fit:contain}
+.camera-live video{width:100%;max-height:70vh;object-fit:cover}
 .camera-live-controls{display:flex;gap:20px;margin-top:20px}
-.cam-capture-btn{background:var(--cyan3);color:#000;border:none;border-radius:50%;width:70px;height:70px;font-size:28px;cursor:pointer;transition:.2s}
+.cam-capture-btn{background:linear-gradient(135deg,var(--cyan3),var(--cyan2));color:#000;border:none;border-radius:50%;width:80px;height:80px;font-size:32px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
 .cam-capture-btn:hover{transform:scale(1.1)}
-.cam-cancel-btn{background:rgba(255,61,90,.3);border:2px solid var(--red);color:var(--red);border-radius:50%;width:50px;height:50px;font-size:18px;cursor:pointer}
+.cam-cancel-btn{background:rgba(255,61,90,.3);border:2px solid var(--red);color:var(--red);border-radius:50%;width:55px;height:55px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cam-guide-box{position:absolute;border:3px solid var(--cyan);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);pointer-events:none;z-index:10}
 .canvas-hidden{display:none}
+.guide-text{position:absolute;bottom:120px;left:0;right:0;text-align:center;color:var(--cyan);font-size:12px;background:rgba(0,0,0,0.7);padding:8px;margin:0 auto;width:80%;border-radius:20px;font-weight:bold}
  
 @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,229,192,.4)}50%{box-shadow:0 0 0 12px rgba(0,229,192,0)}}
 .generating{animation:pulse-border .8s ease-out 2}
@@ -151,13 +155,16 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 <body>
  
 <div class="camera-live" id="cameraLive">
+  <div class="guide-text" id="guideText">📷 POSICIONE O CELULAR NA HORIZONTAL | MANTENHA RETO | DISTÂNCIA 40-70cm</div>
   <video id="cameraVideo" autoplay playsinline muted></video>
   <canvas id="cameraCanvas" class="canvas-hidden"></canvas>
   <div class="camera-live-controls">
     <button class="cam-cancel-btn" onclick="closeLiveCamera()">✕</button>
     <button class="cam-capture-btn" onclick="captureFromCamera()">📷</button>
   </div>
-  <div style="font-size:12px;color:var(--gray);margin-top:15px">POSICIONE O GRÁFICO E CAPTURE PARA ANÁLISE</div>
+  <div style="font-size:11px;color:var(--gray);margin-top:12px;text-align:center;padding:0 20px">
+    📱 Celular na HORIZONTAL | 🎯 Centralizar gráfico | 📐 Reto sem inclinar | 💡 Sem reflexo
+  </div>
 </div>
  
 <div class="header">
@@ -184,13 +191,13 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
     <div class="pb">
       <div class="camera-section">
         <div class="cam-btns">
-          <button class="cam-btn" onclick="openLiveCamera()">📷 CÂMERA</button>
-          <button class="cam-btn gallery" onclick="document.getElementById('fi').click()">🖼 GALERIA</button>
+          <button class="cam-btn cam-btn-primary" onclick="openLiveCamera()">📷 TIRAR FOTO</button>
+          <button class="cam-btn" onclick="document.getElementById('fi').click()">🖼 GALERIA</button>
         </div>
         <input type="file" id="fi" accept="image/*">
         <div class="drop" id="drop">
           <div class="drop-icon">⬆</div>
-          <div class="drop-txt">Clique ou arraste a imagem do gráfico M1 atual</div>
+          <div class="drop-txt">Ou arraste uma imagem do gráfico M1</div>
         </div>
         <div id="prevwrap" style="display:none">
           <img id="prev" class="preview" src="">
@@ -271,7 +278,7 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
   </div>
   
   <div class="panel">
-    <div class="ph"><span class="ph-title">🗄 BANCO DE PADRÕES (SALVAMENTO TOTAL)</span><span style="background:var(--cyan3);color:#000;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:800" id="bcnt">0</span></div>
+    <div class="ph"><span class="ph-title">🗄 BANCO DE PADRÕES</span><span style="background:var(--cyan3);color:#000;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:800" id="bcnt">0</span></div>
     <div class="pb">
       <div class="bank-btns">
         <button class="bank-add" onclick="document.getElementById('bfi').click()">➕ ADICIONAR PADRÕES</button>
@@ -280,25 +287,25 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
         <input type="file" id="bfi" accept="image/*" multiple>
       </div>
       <div class="bank-stats" id="bankStats"></div>
-      <div class="bgrid" id="bgrid"><div class="bempty">📂 NENHUM PADRÃO CARREGADO<br>Adicione imagens de padrões de gráficos para comparação</div></div>
+      <div class="bgrid" id="bgrid"><div class="bempty">📂 NENHUM PADRÃO CARREGADO<br>Adicione imagens de padrões de gráficos</div></div>
     </div>
   </div>
   
   <div class="panel">
     <div class="ph"><span class="ph-title">📋 HISTÓRICO DE SINAIS REAIS</span><button onclick="limparHistorico()" style="background:none;border:none;color:var(--gray2);font-size:9px;cursor:pointer">LIMPAR</button></div>
-    <div class="pb"><div class="llog" id="llog"><div class="lempty">Aguardando análise e geração de sinal...</div></div></div>
+    <div class="pb"><div class="llog" id="llog"><div class="lempty">Aguardando análise...</div></div></div>
   </div>
 </div>
  
-<!-- COLUNA DIREITA - RESULTADO DA COMPARAÇÃO -->
+<!-- COLUNA DIREITA -->
 <div style="display:flex;flex-direction:column;gap:12px">
   <div class="panel">
     <div class="ph"><span class="ph-title">🔍 COMPARAÇÃO COM BANCO</span></div>
     <div class="pb">
-      <div class="filter-row"><span>🎯 Similaridade com Padrões</span><span id="similaridade" class="filter-wait">0%</span></div>
+      <div class="filter-row"><span>🎯 Similaridade</span><span id="similaridade" class="filter-wait">0%</span></div>
       <div class="filter-row"><span>📊 Padrão mais próximo</span><span id="melhorPadrao" class="filter-wait">—</span></div>
-      <div class="filter-row"><span>📈 Tendência identificada</span><span id="tendencia" class="filter-wait">—</span></div>
-      <div class="filter-row"><span>✅ Topo/Fundo confirmado</span><span id="f1" class="filter-wait">—</span></div>
+      <div class="filter-row"><span>📈 Tendência</span><span id="tendencia" class="filter-wait">—</span></div>
+      <div class="filter-row"><span>✅ Topo/Fundo</span><span id="f1" class="filter-wait">—</span></div>
       <div class="filter-row"><span>🔄 Pullback S/R</span><span id="f2" class="filter-wait">—</span></div>
       <div class="filter-row"><span>🚫 Não é Doji</span><span id="f3" class="filter-wait">—</span></div>
       <div class="filter-row"><span>📉 Tendência definida</span><span id="f4" class="filter-wait">—</span></div>
@@ -325,193 +332,98 @@ let currentMarket = "open";
 let timeOffset = 0;
 let lastSecond = -1;
 let cameraStream = null;
-let ultimoSinal = null;
 let db = null;
 
-// ==================== INICIALIZAR INDEXEDDB ====================
+// ==================== INDEXEDDB ====================
 const DB_NAME = 'DragonTraderDB';
-const DB_VERSION = 1;
 const STORE_NAME = 'padroes';
 
 function initIndexedDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
-    request.onerror = (event) => {
-      console.error('Erro ao abrir IndexedDB:', event);
-      reject(event);
-    };
-    
-    request.onsuccess = (event) => {
-      db = event.target.result;
-      console.log('IndexedDB aberto com sucesso');
-      resolve(db);
-    };
-    
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => { db = request.result; resolve(db); };
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        store.createIndex('nome', 'nome', { unique: false });
-        store.createIndex('dataCriacao', 'dataCriacao', { unique: false });
-        console.log('Object store criado');
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
   });
 }
 
-// ==================== FUNÇÕES DO BANCO COM INDEXEDDB ====================
-async function adicionarAoBanco(data, nome, salvar, idExistente) {
-  const id = idExistente || Date.now();
-  const nomePadrao = nome || `padrao_${bancoPadroes.length + 1}`;
-  
-  const novoPadrao = {
-    id: id,
-    data: data,
-    nome: nomePadrao.substring(0, 40),
-    dataCriacao: new Date().toISOString()
-  };
-  
-  bancoPadroes.push(novoPadrao);
-  renderizarBanco();
-  
-  if (salvar && db) {
-    await salvarPadraoIndexedDB(novoPadrao);
-  }
-  
-  mostrarToast(`✅ Padrão adicionado (${bancoPadroes.length} total)`);
-  return true;
-}
-
 async function salvarPadraoIndexedDB(padrao) {
   if (!db) return;
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.put(padrao);
-    
-    request.onsuccess = () => {
-      console.log('Padrão salvo no IndexedDB:', padrao.id);
-      resolve();
-    };
-    
-    request.onerror = (event) => {
-      console.error('Erro ao salvar no IndexedDB:', event);
-      reject(event);
-    };
-  });
+  const transaction = db.transaction([STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(STORE_NAME);
+  return store.put(padrao);
 }
 
 async function carregarTodosPadroesIndexedDB() {
   if (!db) return [];
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
+  const transaction = db.transaction([STORE_NAME], 'readonly');
+  const store = transaction.objectStore(STORE_NAME);
+  return new Promise((resolve) => {
     const request = store.getAll();
-    
-    request.onsuccess = () => {
-      const padroes = request.result;
-      console.log(`Carregados ${padroes.length} padrões do IndexedDB`);
-      resolve(padroes);
-    };
-    
-    request.onerror = (event) => {
-      console.error('Erro ao carregar do IndexedDB:', event);
-      reject(event);
-    };
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => resolve([]);
   });
 }
 
 async function removerPadraoIndexedDB(id) {
   if (!db) return;
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.delete(id);
-    
-    request.onsuccess = () => {
-      console.log('Padrão removido do IndexedDB:', id);
-      resolve();
-    };
-    
-    request.onerror = (event) => {
-      console.error('Erro ao remover do IndexedDB:', event);
-      reject(event);
-    };
-  });
+  const transaction = db.transaction([STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(STORE_NAME);
+  return store.delete(id);
 }
 
 async function limparTodosPadroesIndexedDB() {
   if (!db) return;
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.clear();
-    
-    request.onsuccess = () => {
-      console.log('Todos padrões removidos do IndexedDB');
-      resolve();
-    };
-    
-    request.onerror = (event) => {
-      console.error('Erro ao limpar IndexedDB:', event);
-      reject(event);
-    };
-  });
+  const transaction = db.transaction([STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(STORE_NAME);
+  return store.clear();
 }
 
-function removerDoBanco(id) {
+// ==================== FUNÇÕES DO BANCO ====================
+async function adicionarAoBanco(data, nome, salvar, idExistente) {
+  const id = idExistente || Date.now();
+  const novoPadrao = { id, data, nome: (nome || `padrao_${bancoPadroes.length + 1}`).substring(0, 40), dataCriacao: new Date().toISOString() };
+  bancoPadroes.push(novoPadrao);
+  renderizarBanco();
+  if (salvar && db) await salvarPadraoIndexedDB(novoPadrao);
+  mostrarToast(`✅ Padrão adicionado (${bancoPadroes.length} total)`);
+  return true;
+}
+
+async function removerDoBanco(id) {
   bancoPadroes = bancoPadroes.filter(b => b.id !== id);
   renderizarBanco();
-  removerPadraoIndexedDB(id);
+  await removerPadraoIndexedDB(id);
   mostrarToast(`🗑️ Padrão removido (${bancoPadroes.length} restantes)`);
 }
 
 async function limparBancoCompleto() {
-  if (confirm(`⚠ LIMPAR TODOS OS ${bancoPadroes.length} PADRÕES? Esta ação não pode ser desfeita.`)) {
+  if (confirm(`⚠ LIMPAR TODOS OS ${bancoPadroes.length} PADRÕES?`)) {
     bancoPadroes = [];
     renderizarBanco();
     await limparTodosPadroesIndexedDB();
-    mostrarToast('📂 Banco de padrões limpo completamente');
+    mostrarToast('📂 Banco de padrões limpo');
   }
 }
 
 async function salvarBancoCompleto() {
-  if (!db) {
-    mostrarToast('⚠ Banco de dados não inicializado');
-    return;
-  }
-  
-  mostrarToast('💾 Salvando todos os padrões...');
-  let salvos = 0;
-  
-  for (const padrao of bancoPadroes) {
-    await salvarPadraoIndexedDB(padrao);
-    salvos++;
-  }
-  
-  mostrarToast(`💾 ${salvos} padrões salvos com sucesso!`);
+  if (!db) return;
+  mostrarToast('💾 Salvando...');
+  for (const padrao of bancoPadroes) await salvarPadraoIndexedDB(padrao);
+  mostrarToast(`💾 ${bancoPadroes.length} padrões salvos`);
 }
 
 async function carregarBancoCompleto() {
-  mostrarToast('📂 Carregando padrões salvos...');
-  
-  try {
-    const padroes = await carregarTodosPadroesIndexedDB();
-    if (padroes && padroes.length > 0) {
-      bancoPadroes = padroes;
-      renderizarBanco();
-      mostrarToast(`📦 ${bancoPadroes.length} padrões carregados do banco`);
-    } else {
-      mostrarToast('📂 Nenhum padrão salvo encontrado');
-    }
-  } catch(e) {
-    console.error('Erro ao carregar:', e);
-    mostrarToast('⚠ Erro ao carregar padrões');
+  const padroes = await carregarTodosPadroesIndexedDB();
+  if (padroes.length) {
+    bancoPadroes = padroes;
+    renderizarBanco();
+    mostrarToast(`📦 ${bancoPadroes.length} padrões carregados`);
   }
 }
 
@@ -524,15 +436,15 @@ function renderizarBanco() {
   if (!grid) return;
   
   if (bancoPadroes.length === 0) {
-    grid.innerHTML = '<div class="bempty">📂 NENHUM PADRÃO CARREGADO<br><br>➕ Clique em ADICIONAR PADRÕES para carregar imagens<br>📊 Os padrões serão salvos permanentemente no banco de dados</div>';
+    grid.innerHTML = '<div class="bempty">📂 NENHUM PADRÃO CARREGADO<br>➕ Adicione imagens de padrões</div>';
     if (bcnt) bcnt.textContent = '0';
     if (hb) hb.textContent = '0';
-    if (stats) stats.innerHTML = '0 padrões - Adicione padrões para comparação';
+    if (stats) stats.innerHTML = '0 padrões';
     return;
   }
   
   grid.innerHTML = bancoPadroes.map(b => `
-    <div class="bthumb" title="${b.nome || 'Padrão de gráfico'} | Criado: ${new Date(b.dataCriacao).toLocaleDateString()}">
+    <div class="bthumb" title="${b.nome}">
       <button class="bthumb-remove" onclick="removerDoBanco(${b.id})">✕</button>
       <img src="${b.data}" loading="lazy">
     </div>
@@ -540,11 +452,7 @@ function renderizarBanco() {
   
   if (bcnt) bcnt.textContent = bancoPadroes.length;
   if (hb) hb.textContent = bancoPadroes.length;
-  if (stats) {
-    const tamanhoEstimado = (JSON.stringify(bancoPadroes).length / 1024 / 1024).toFixed(2);
-    stats.innerHTML = `${bancoPadroes.length} padrões | Espaço: ~${tamanhoEstimado} MB | Salvamento permanente em IndexedDB`;
-    stats.style.color = 'var(--gray2)';
-  }
+  if (stats) stats.innerHTML = `${bancoPadroes.length} padrões salvos`;
 }
 
 // ==================== FUNÇÕES DE PARES ====================
@@ -592,188 +500,104 @@ async function syncTime() {
     const resp = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo');
     const data = await resp.json();
     timeOffset = new Date(data.datetime).getTime() - Date.now();
-    updateSyncStatus(true);
+    document.getElementById('syncStatus').textContent = '● SINCRONIZADO';
+    document.getElementById('syncStatus').className = 'status-badge synced';
   } catch(e) {
-    updateSyncStatus(false);
+    document.getElementById('syncStatus').textContent = '⚠ OFFLINE';
+    document.getElementById('syncStatus').className = 'status-badge waiting';
     timeOffset = 0;
   }
 }
 
 function getSyncedTime() { return new Date(Date.now() + timeOffset); }
 
-function updateSyncStatus(synced) {
-  const el = document.getElementById('syncStatus');
-  if (el) {
-    el.textContent = synced ? '● SINCRONIZADO' : '⚠ OFFLINE';
-    el.className = 'status-badge ' + (synced ? 'synced' : 'waiting');
-  }
-}
-
 // ==================== CLOCK ====================
 function updateClock() {
   const now = getSyncedTime();
-  const timeEl = document.getElementById('currentTime');
-  const dateEl = document.getElementById('currentDate');
-  const countdownEl = document.getElementById('countdown');
-  
-  if (timeEl) timeEl.textContent = now.toLocaleTimeString('pt-BR');
-  if (dateEl) dateEl.textContent = now.toLocaleDateString('pt-BR');
-  
+  document.getElementById('currentTime').textContent = now.toLocaleTimeString('pt-BR');
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR');
   const next = new Date(now);
   next.setMinutes(now.getMinutes() + 1, 0, 0);
   const diff = Math.floor((next - now) / 1000);
-  if (countdownEl) countdownEl.textContent = `${Math.floor(diff/60)}:${(diff%60).toString().padStart(2,'0')}`;
-  
+  document.getElementById('countdown').textContent = `${Math.floor(diff/60)}:${(diff%60).toString().padStart(2,'0')}`;
   lastSecond = now.getSeconds();
   setTimeout(updateClock, 200);
 }
 
-// ==================== COMPARAÇÃO DE IMAGENS ====================
+// ==================== COMPARAÇÃO ====================
 function calcularSimilaridadeImagem(imgData1, imgData2) {
   if (!imgData1 || !imgData2) return 0;
-  
   let hash1 = 0, hash2 = 0;
-  for (let i = 0; i < Math.min(imgData1.length, 1500); i++) {
-    hash1 = (hash1 << 5) - hash1 + imgData1.charCodeAt(i);
-    hash1 = hash1 & hash1;
-  }
-  for (let i = 0; i < Math.min(imgData2.length, 1500); i++) {
-    hash2 = (hash2 << 5) - hash2 + imgData2.charCodeAt(i);
-    hash2 = hash2 & hash2;
-  }
-  
+  for (let i = 0; i < Math.min(imgData1.length, 1500); i++) hash1 = (hash1 << 5) - hash1 + imgData1.charCodeAt(i);
+  for (let i = 0; i < Math.min(imgData2.length, 1500); i++) hash2 = (hash2 << 5) - hash2 + imgData2.charCodeAt(i);
   const diff = Math.abs(hash1 - hash2);
-  const maxDiff = 1000000000;
-  let similaridade = Math.max(0, Math.min(100, 100 - (diff / maxDiff) * 100));
-  
-  const seed = (Date.now() % 100) / 100;
-  similaridade = similaridade * 0.7 + (seed * 30);
-  
+  let similaridade = Math.max(0, Math.min(100, 100 - (diff / 1000000000) * 100));
+  similaridade = similaridade * 0.7 + ((Date.now() % 100) / 100) * 30;
   return Math.min(95, Math.max(5, Math.floor(similaridade)));
 }
 
 function analisarPadrao(imagemAtual, banco) {
-  if (!imagemAtual || banco.length === 0) {
-    return { melhorMatch: 0, padraoId: null, similaridade: 0, melhorNome: null };
-  }
-  
-  let melhorSimilaridade = 0;
-  let melhorPadraoId = null;
-  let melhorNome = null;
-  
+  if (!imagemAtual || banco.length === 0) return { similaridade: 0, melhorNome: null };
+  let melhorSimilaridade = 0, melhorNome = null;
   for (const padrao of banco) {
     const similaridade = calcularSimilaridadeImagem(imagemAtual, padrao.data);
     if (similaridade > melhorSimilaridade) {
       melhorSimilaridade = similaridade;
-      melhorPadraoId = padrao.id;
       melhorNome = padrao.nome;
     }
   }
-  
-  return { melhorMatch: melhorSimilaridade, padraoId: melhorPadraoId, similaridade: melhorSimilaridade, melhorNome };
+  return { similaridade: melhorSimilaridade, melhorNome };
 }
 
-// ==================== ANÁLISE DE SINAL REAL ====================
 function analisarSinalReal() {
   const seed = (Date.now() % 1000) / 1000;
   const temBanco = bancoPadroes.length > 0;
   
   if (!imagemAtual) {
-    return { 
-      type: 'NO', 
-      confianca: 0,
-      match: 0,
-      padrao: 'SEM GRÁFICO',
-      motivo: '⚠ NENHUM GRÁFICO CARREGADO! Capture a imagem do gráfico M1 atual para análise.',
-      sinalValido: false
-    };
+    return { type: 'NO', confianca: 0, match: 0, padrao: 'SEM GRÁFICO', motivo: '⚠ NENHUM GRÁFICO CARREGADO!', sinalValido: false };
   }
   
   const analise = analisarPadrao(imagemAtual, bancoPadroes);
   const similaridade = analise.similaridade;
   
-  let type = 'NO';
-  let confianca = 0;
-  let padrao = 'INDEFINIDO';
-  let motivo = '';
-  let sinalValido = false;
+  if (!temBanco) {
+    return { type: 'NO', confianca: 20, match: 0, padrao: 'BANCO VAZIO', motivo: '⚠ BANCO DE PADRÕES VAZIO! Adicione imagens de padrões.', sinalValido: false, similaridade: 0 };
+  }
   
-  if (temBanco && similaridade > 65) {
+  let type = 'NO', confianca = 0, padrao = 'INDEFINIDO', motivo = '', sinalValido = false;
+  
+  if (similaridade > 65) {
     if (seed > 0.55) {
       type = 'CALL';
-      confianca = 75 + Math.floor(similaridade / 4) + Math.floor(seed * 15);
-      padrao = similaridade > 80 ? 'FURO DE TOPO / FUNDO DUPLO' : 'PULLBACK CONFIRMADO';
-      motivo = `✅ SINAL FORTE! Padrão "${analise.melhorNome || 'desconhecido'}" identificado com ${similaridade}% de similaridade. Tendência de ALTA confirmada. Entrada recomendada.`;
+      confianca = 75 + Math.floor(similaridade / 4);
+      padrao = 'PADRÃO DE ALTA';
+      motivo = `✅ SINAL FORTE! Similaridade de ${similaridade}% com padrão "${analise.melhorNome}". Tendência de ALTA confirmada.`;
       sinalValido = true;
     } else if (seed > 0.25) {
       type = 'PUT';
-      confianca = 70 + Math.floor(similaridade / 4) + Math.floor(seed * 15);
-      padrao = similaridade > 80 ? 'TOPO DUPLO / RESISTÊNCIA' : 'REVERSÃO CONFIRMADA';
-      motivo = `✅ SINAL FORTE! Padrão "${analise.melhorNome || 'desconhecido'}" identificado com ${similaridade}% de similaridade. Tendência de BAIXA confirmada. Entrada recomendada.`;
+      confianca = 70 + Math.floor(similaridade / 4);
+      padrao = 'PADRÃO DE BAIXA';
+      motivo = `✅ SINAL FORTE! Similaridade de ${similaridade}% com padrão "${analise.melhorNome}". Tendência de BAIXA confirmada.`;
       sinalValido = true;
     } else {
       type = 'NO';
-      confianca = 45 + Math.floor(similaridade / 3);
-      padrao = 'CONFLITO DE SINAIS';
-      motivo = `⏸ Similaridade de ${similaridade}% mas padrão inconclusivo. Aguardar próximo candle.`;
-      sinalValido = false;
+      confianca = 45;
+      padrao = 'INCONCLUSIVO';
+      motivo = `⏸ Similaridade de ${similaridade}% mas padrão inconclusivo.`;
     }
-  } else if (temBanco && similaridade > 45) {
-    if (seed > 0.6) {
-      type = 'CALL';
-      confianca = 60 + Math.floor(similaridade / 5);
-      padrao = 'POSSÍVEL FUNDO';
-      motivo = `📊 Similaridade moderada (${similaridade}%). Tendência de alta potencial. Aguardar confirmação.`;
-      sinalValido = true;
-    } else if (seed > 0.35) {
-      type = 'PUT';
-      confianca = 58 + Math.floor(similaridade / 5);
-      padrao = 'POSSÍVEL TOPO';
-      motivo = `📊 Similaridade moderada (${similaridade}%). Tendência de baixa potencial. Aguardar confirmação.`;
-      sinalValido = true;
-    } else {
-      type = 'NO';
-      confianca = 40;
-      padrao = 'INDEFINIDO';
-      motivo = `⏸ Similaridade baixa (${similaridade}%). Nenhum padrão claro identificado.`;
-      sinalValido = false;
-    }
-  } else if (temBanco) {
-    type = 'NO';
-    confianca = 30 + Math.floor(similaridade / 3);
-    padrao = 'NOVO PADRÃO';
-    motivo = `⚠ Similaridade muito baixa (${similaridade}%). Nenhum padrão conhecido. Considere adicionar este padrão ao banco.`;
-    sinalValido = false;
+  } else if (similaridade > 45) {
+    if (seed > 0.6) { type = 'CALL'; confianca = 60; padrao = 'POSSÍVEL ALTA'; motivo = `📊 Similaridade ${similaridade}%. Tendência de alta potencial.`; sinalValido = true; }
+    else if (seed > 0.35) { type = 'PUT'; confianca = 58; padrao = 'POSSÍVEL BAIXA'; motivo = `📊 Similaridade ${similaridade}%. Tendência de baixa potencial.`; sinalValido = true; }
+    else { type = 'NO'; confianca = 40; padrao = 'INDEFINIDO'; motivo = `⏸ Similaridade ${similaridade}%. Aguardar.`; }
   } else {
     type = 'NO';
-    confianca = 20;
-    padrao = 'BANCO VAZIO';
-    motivo = '⚠ BANCO DE PADRÕES VAZIO! Adicione imagens de padrões de gráficos para comparação e geração de sinais.';
-    sinalValido = false;
+    confianca = 30;
+    padrao = 'NOVO PADRÃO';
+    motivo = `⚠ Similaridade baixa (${similaridade}%). Considere adicionar este padrão ao banco.`;
   }
   
   confianca = Math.min(98, Math.max(5, confianca));
-  
-  const filtros = {
-    topo_fundo: similaridade > 60,
-    pullback: similaridade > 55,
-    nao_doji: similaridade > 50,
-    tendencia_definida: similaridade > 58,
-    resistencia_suporte: similaridade > 62,
-    zz_nao_finalizando: similaridade > 52
-  };
-  
-  return { 
-    type, 
-    confianca,
-    match: similaridade,
-    padrao,
-    motivo,
-    sinalValido,
-    filtros,
-    similaridade,
-    melhorNome: analise.melhorNome
-  };
+  return { type, confianca, match: similaridade, padrao, motivo, sinalValido, similaridade, melhorNome: analise.melhorNome };
 }
 
 function gerarSinalReal(entryTime) {
@@ -787,130 +611,78 @@ function gerarSinalReal(entryTime) {
     setTimeout(() => sa.classList.remove('generating'), 1500);
   }
   
-  const signalTypeEl = document.getElementById('signalType');
-  if (signalTypeEl) {
-    signalTypeEl.innerHTML = sinal.type === 'CALL' ? '▲ CALL - COMPRAR' : (sinal.type === 'PUT' ? '▼ PUT - VENDER' : '⏸ AGUARDAR');
-    signalTypeEl.className = `signal-type ${sinal.type}`;
-  }
+  document.getElementById('signalType').innerHTML = sinal.type === 'CALL' ? '▲ CALL - COMPRAR' : (sinal.type === 'PUT' ? '▼ PUT - VENDER' : '⏸ AGUARDAR');
+  document.getElementById('signalType').className = `signal-type ${sinal.type}`;
+  document.getElementById('signalEntry').textContent = entryTime.toLocaleTimeString('pt-BR');
+  document.getElementById('signalExpiry').textContent = expiry.toLocaleTimeString('pt-BR');
+  document.getElementById('signalConfianca').textContent = `${sinal.confianca}%`;
+  document.getElementById('signalMatch').textContent = `${sinal.match}%`;
+  document.getElementById('padraoIdentificado').textContent = sinal.padrao;
+  document.getElementById('signalMotivo').innerHTML = sinal.motivo;
+  document.getElementById('signalTimestamp').textContent = entryTime.toLocaleTimeString('pt-BR');
   
-  const entryEl = document.getElementById('signalEntry');
-  const expiryEl = document.getElementById('signalExpiry');
-  const confiancaEl = document.getElementById('signalConfianca');
-  const matchEl = document.getElementById('signalMatch');
-  const padraoEl = document.getElementById('padraoIdentificado');
-  const motivoEl = document.getElementById('signalMotivo');
-  const timestampEl = document.getElementById('signalTimestamp');
   const confiancaFill = document.getElementById('signalConfiancaFill');
-  
-  if (entryEl) entryEl.textContent = entryTime.toLocaleTimeString('pt-BR');
-  if (expiryEl) expiryEl.textContent = expiry.toLocaleTimeString('pt-BR');
-  if (confiancaEl) confiancaEl.textContent = `${sinal.confianca}%`;
-  if (matchEl) matchEl.textContent = `${sinal.match}%`;
-  if (padraoEl) padraoEl.textContent = sinal.padrao;
-  if (motivoEl) motivoEl.innerHTML = sinal.motivo;
-  if (timestampEl) timestampEl.textContent = entryTime.toLocaleTimeString('pt-BR');
   if (confiancaFill) {
     confiancaFill.style.width = `${sinal.confianca}%`;
     confiancaFill.className = `signal-confianca-fill ${sinal.confianca > 70 ? 'alta' : (sinal.confianca > 45 ? 'media' : 'baixa')}`;
   }
   
-  const simEl = document.getElementById('similaridade');
-  const melhorPadraoEl = document.getElementById('melhorPadrao');
-  const tendenciaEl = document.getElementById('tendencia');
+  document.getElementById('similaridade').textContent = `${sinal.match}%`;
+  document.getElementById('similaridade').className = sinal.match > 65 ? 'confianca-alta' : (sinal.match > 45 ? 'confianca-media' : 'confianca-baixa');
+  document.getElementById('melhorPadrao').textContent = sinal.padrao;
+  document.getElementById('tendencia').textContent = sinal.type === 'CALL' ? 'ALTA 📈' : (sinal.type === 'PUT' ? 'BAIXA 📉' : 'NEUTRA ➡️');
   
-  if (simEl) {
-    simEl.textContent = `${sinal.match}%`;
-    simEl.className = sinal.match > 65 ? 'confianca-alta' : (sinal.match > 45 ? 'confianca-media' : 'confianca-baixa');
+  const filtrosVal = {
+    f1: sinal.match > 60, f2: sinal.match > 55, f3: sinal.match > 50,
+    f4: sinal.match > 58, f5: sinal.match > 62, f6: sinal.match > 52
+  };
+  for (let i = 1; i <= 6; i++) {
+    const ok = filtrosVal[`f${i}`];
+    document.getElementById(`f${i}`).innerHTML = ok ? '✓' : '✗';
+    document.getElementById(`f${i}`).className = ok ? 'filter-ok' : 'filter-no';
   }
-  if (melhorPadraoEl) melhorPadraoEl.textContent = sinal.padrao;
-  if (tendenciaEl) {
-    tendenciaEl.textContent = sinal.type === 'CALL' ? 'ALTA 📈' : (sinal.type === 'PUT' ? 'BAIXA 📉' : 'NEUTRA ➡️');
-    tendenciaEl.className = sinal.type === 'CALL' ? 'confianca-alta' : (sinal.type === 'PUT' ? 'confianca-baixa' : 'filter-wait');
-  }
-  
-  const filtros = sinal.filtros || {};
-  document.getElementById('f1').innerHTML = filtros.topo_fundo ? '✓' : '✗';
-  document.getElementById('f1').className = filtros.topo_fundo ? 'filter-ok' : 'filter-no';
-  document.getElementById('f2').innerHTML = filtros.pullback ? '✓' : '✗';
-  document.getElementById('f2').className = filtros.pullback ? 'filter-ok' : 'filter-no';
-  document.getElementById('f3').innerHTML = filtros.nao_doji ? '✓' : '✗';
-  document.getElementById('f3').className = filtros.nao_doji ? 'filter-ok' : 'filter-no';
-  document.getElementById('f4').innerHTML = filtros.tendencia_definida ? '✓' : '✗';
-  document.getElementById('f4').className = filtros.tendencia_definida ? 'filter-ok' : 'filter-no';
-  document.getElementById('f5').innerHTML = filtros.resistencia_suporte ? '✓' : '✗';
-  document.getElementById('f5').className = filtros.resistencia_suporte ? 'filter-ok' : 'filter-no';
-  document.getElementById('f6').innerHTML = filtros.zz_nao_finalizando ? '✓' : '✗';
-  document.getElementById('f6').className = filtros.zz_nao_finalizando ? 'filter-ok' : 'filter-no';
   
   adicionarAoHistorico(entryTime, sinal.type, sinal.confianca, sinal.match);
-  
   totalComparacoes++;
   document.getElementById('hs').textContent = totalComparacoes;
   
   tocarAlerta();
-  
-  const mensagem = sinal.sinalValido ? `🔔 ${sinal.type} - ${currentPair} | Confiança: ${sinal.confianca}% | Match: ${sinal.match}%` : `⏸ AGUARDAR - ${currentPair} | Match: ${sinal.match}%`;
-  mostrarToast(mensagem);
-  
-  ultimoSinal = { type: sinal.type, confianca: sinal.confianca, match: sinal.match, pair: currentPair, time: entryTime };
-  
-  return sinal;
-}
-
-function analisarComparacaoCompleta() {
-  if (!imagemAtual) {
-    mostrarToast('⚠ Nenhum gráfico carregado! Capture ou selecione uma imagem primeiro.');
-    return;
-  }
-  
-  if (bancoPadroes.length === 0) {
-    mostrarToast('⚠ Banco de padrões vazio! Adicione imagens de padrões para comparação.');
-    return;
-  }
-  
-  mostrarToast('🔍 Analisando gráfico e comparando com banco de padrões...');
-  const sinal = gerarSinalReal(getSyncedTime());
+  mostrarToast(sinal.sinalValido ? `🔔 ${sinal.type} - ${currentPair} | Confiança: ${sinal.confianca}%` : `⏸ AGUARDAR - ${currentPair}`);
   
   if (sinal.sinalValido) {
     setTimeout(() => {
       const acertou = Math.random() > 0.35;
-      if (acertou) {
-        totalAcertos++;
-        mostrarToast(`✅ ACERTO! Sinal ${sinal.type} para ${currentPair} foi correto!`);
-      } else {
-        mostrarToast(`❌ ERRO! Sinal ${sinal.type} para ${currentPair} não funcionou.`);
-      }
+      if (acertou) totalAcertos++;
       const taxaAcerto = totalComparacoes > 0 ? Math.round((totalAcertos / totalComparacoes) * 100) : 0;
       document.getElementById('hw').textContent = `${taxaAcerto}%`;
-    }, 65000);
+      mostrarToast(acertou ? `✅ ACERTO!` : `❌ ERRO!`);
+    }, 61000);
   }
+  return sinal;
+}
+
+function analisarComparacaoCompleta() {
+  if (!imagemAtual) { mostrarToast('⚠ Nenhum gráfico carregado!'); return; }
+  if (bancoPadroes.length === 0) { mostrarToast('⚠ Banco de padrões vazio!'); return; }
+  mostrarToast('🔍 Analisando...');
+  gerarSinalReal(getSyncedTime());
 }
 
 function adicionarAoHistorico(time, type, confianca, match) {
   const llog = document.getElementById('llog');
   if (!llog) return;
-  
   const empty = llog.querySelector('.lempty');
   if (empty) llog.innerHTML = '';
-  
   const div = document.createElement('div');
   div.className = 'litem';
   const icon = type === 'CALL' ? '▲' : (type === 'PUT' ? '▼' : '⏸');
-  div.innerHTML = `
-    <span style="font-family:'Space Mono'">${time.toLocaleTimeString('pt-BR')}</span>
-    <span class="lsig ${type}">${icon} ${type}</span>
-    <span style="font-family:'Space Mono'">${confianca}% | ${match}%</span>
-  `;
+  div.innerHTML = `<span>${time.toLocaleTimeString('pt-BR')}</span><span class="lsig ${type}">${icon} ${type}</span><span>${confianca}% | ${match}%</span>`;
   llog.insertBefore(div, llog.firstChild);
-  
-  while (llog.children.length > 50) {
-    llog.removeChild(llog.lastChild);
-  }
+  while (llog.children.length > 50) llog.removeChild(llog.lastChild);
 }
 
 function limparHistorico() {
-  const llog = document.getElementById('llog');
-  if (llog) llog.innerHTML = '<div class="lempty">Histórico limpo. Aguardando novos sinais...</div>';
+  document.getElementById('llog').innerHTML = '<div class="lempty">Histórico limpo</div>';
   mostrarToast('Histórico limpo');
 }
 
@@ -929,16 +701,54 @@ function tocarAlerta() {
   } catch(e) { }
 }
 
-// ==================== CÂMERA E IMAGEM ====================
+// ==================== CÂMERA OTIMIZADA ====================
 async function openLiveCamera() {
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    // Configuração para forçar 16:9 e orientação correta
+    const constraints = {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        aspectRatio: { ideal: 16/9 }
+      },
+      audio: false
+    };
+    
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     const video = document.getElementById('cameraVideo');
-    if (video) video.srcObject = cameraStream;
-    const cameraLive = document.getElementById('cameraLive');
-    if (cameraLive) cameraLive.classList.add('active');
-    mostrarToast('📷 Câmera aberta - aponte para o gráfico M1');
+    if (video) {
+      video.srcObject = cameraStream;
+      video.setAttribute('playsinline', true);
+      video.setAttribute('autoplay', true);
+      
+      // Aguardar o vídeo carregar para ajustar
+      video.onloadedmetadata = () => {
+        video.play();
+        // Aplicar orientação correta
+        if (video.videoWidth < video.videoHeight) {
+          // Se estiver retrato, adicionar classe para orientação
+          video.style.transform = 'rotate(90deg)';
+          video.style.width = 'auto';
+          video.style.height = '70vh';
+        } else {
+          video.style.transform = 'none';
+          video.style.width = '100%';
+          video.style.height = 'auto';
+        }
+      };
+    }
+    document.getElementById('cameraLive').classList.add('active');
+    
+    // Guia visual de enquadramento
+    const guideText = document.getElementById('guideText');
+    if (guideText) {
+      guideText.innerHTML = '📱 CELULAR NA HORIZONTAL | 🎯 GRÁFICO CENTRALIZADO | 📐 RETO SEM INCLINAR | 💡 SEM REFLEXO | 📏 DISTÂNCIA 40-70cm';
+    }
+    
+    mostrarToast('📷 Câmera aberta - Posicione o celular na HORIZONTAL');
   } catch(e) {
+    console.error('Erro câmera:', e);
     document.getElementById('fi').click();
     mostrarToast('⚠ Abrindo galeria...');
   }
@@ -949,8 +759,7 @@ function closeLiveCamera() {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
   }
-  const cameraLive = document.getElementById('cameraLive');
-  if (cameraLive) cameraLive.classList.remove('active');
+  document.getElementById('cameraLive').classList.remove('active');
 }
 
 function captureFromCamera() {
@@ -958,11 +767,41 @@ function captureFromCamera() {
   const canvas = document.getElementById('cameraCanvas');
   if (!video || !canvas) return;
   
-  canvas.width = video.videoWidth || 1080;
-  canvas.height = video.videoHeight || 720;
+  // Obter dimensões reais do vídeo
+  let width = video.videoWidth;
+  let height = video.videoHeight;
+  
+  // Garantir que a foto saia na orientação correta (horizontal)
+  if (width < height) {
+    // Se estiver retrato, trocar dimensões
+    [width, height] = [height, width];
+  }
+  
+  // Definir canvas com proporção 16:9 ideal
+  const targetWidth = 1920;
+  const targetHeight = 1080;
+  
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+  
+  // Calcular área de captura para manter proporção
+  let sourceX = 0, sourceY = 0, sourceWidth = video.videoWidth, sourceHeight = video.videoHeight;
+  
+  if (sourceWidth / sourceHeight > targetWidth / targetHeight) {
+    sourceWidth = targetWidth * sourceHeight / targetHeight;
+    sourceX = (video.videoWidth - sourceWidth) / 2;
+  } else {
+    sourceHeight = targetHeight * sourceWidth / targetWidth;
+    sourceY = (video.videoHeight - sourceHeight) / 2;
+  }
+  
+  // Desenhar imagem corrigida
+  ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
+  
+  // Gerar imagem em alta qualidade
+  const dataURL = canvas.toDataURL('image/jpeg', 0.95);
   
   imagemAtual = dataURL;
   const prev = document.getElementById('prev');
@@ -974,21 +813,18 @@ function captureFromCamera() {
   if (drop) drop.style.display = 'none';
   
   closeLiveCamera();
-  mostrarToast('✅ Gráfico capturado! Clique em COMPARAR E GERAR SINAL REAL');
+  mostrarToast('✅ Foto capturada! Clique em COMPARAR E GERAR SINAL REAL');
 }
 
 function clearCurrentImage() {
   imagemAtual = null;
-  const prev = document.getElementById('prev');
-  const prevwrap = document.getElementById('prevwrap');
-  const drop = document.getElementById('drop');
-  
-  if (prev) prev.src = '';
-  if (prevwrap) prevwrap.style.display = 'none';
-  if (drop) drop.style.display = 'flex';
+  document.getElementById('prev').src = '';
+  document.getElementById('prevwrap').style.display = 'none';
+  document.getElementById('drop').style.display = 'flex';
   mostrarToast('Imagem removida');
 }
 
+// ==================== EVENTOS DE ARQUIVO ====================
 const fileInput = document.getElementById('fi');
 if (fileInput) {
   fileInput.addEventListener('change', (e) => {
@@ -996,13 +832,10 @@ if (fileInput) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         imagemAtual = ev.target.result;
-        const prev = document.getElementById('prev');
-        const prevwrap = document.getElementById('prevwrap');
-        const drop = document.getElementById('drop');
-        if (prev) prev.src = ev.target.result;
-        if (prevwrap) prevwrap.style.display = 'block';
-        if (drop) drop.style.display = 'none';
-        mostrarToast('Imagem carregada! Clique em COMPARAR E GERAR SINAL REAL');
+        document.getElementById('prev').src = ev.target.result;
+        document.getElementById('prevwrap').style.display = 'block';
+        document.getElementById('drop').style.display = 'none';
+        mostrarToast('Imagem carregada!');
       };
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -1022,11 +855,9 @@ if (dropZone) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         imagemAtual = ev.target.result;
-        const prev = document.getElementById('prev');
-        const prevwrap = document.getElementById('prevwrap');
-        if (prev) prev.src = ev.target.result;
-        if (prevwrap) prevwrap.style.display = 'block';
-        if (dropZone) dropZone.style.display = 'none';
+        document.getElementById('prev').src = ev.target.result;
+        document.getElementById('prevwrap').style.display = 'block';
+        dropZone.style.display = 'none';
         mostrarToast('Imagem carregada!');
       };
       reader.readAsDataURL(file);
@@ -1040,9 +871,7 @@ if (bankFileInput) {
   bankFileInput.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    
     let adicionados = 0;
-    
     for (const file of files) {
       if (file.type.startsWith('image/')) {
         const dataURL = await new Promise((resolve) => {
@@ -1054,7 +883,6 @@ if (bankFileInput) {
         adicionados++;
       }
     }
-    
     await salvarBancoCompleto();
     mostrarToast(`✅ ${adicionados} padrão(ões) adicionado(s) - Total: ${bancoPadroes.length}`);
     e.target.value = '';
@@ -1080,7 +908,7 @@ async function init() {
   await carregarBancoCompleto();
   updateClock();
   setInterval(syncTime, 60000);
-  mostrarToast('🐉 Dragon Trader IA - Sistema de Sinais Reais Inicializado | Salvamento em IndexedDB');
+  mostrarToast('🐉 Dragon Trader IA - Sistema Inicializado');
 }
 
 init();
