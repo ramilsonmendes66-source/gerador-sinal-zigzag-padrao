@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <title>Sinal Trader IA - Módulo de Análise com Câmera</title>
 <style>
 * {
@@ -375,43 +375,74 @@ input, select {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     z-index: 2000;
     display: none;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
 }
 
 .video-preview.active {
     display: flex;
 }
 
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
+
 .video-preview video {
-    max-width: 90%;
-    max-height: 70%;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: cover;
     border-radius: 12px;
     border: 2px solid #00e5c0;
 }
 
-.video-controls {
+.camera-controls {
     margin-top: 20px;
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
 }
 
-.capture-btn {
+.camera-controls button {
+    padding: 12px 20px;
+    font-size: 16px;
+    min-width: 120px;
+}
+
+.capture-photo-btn {
     background: #00ff88;
     color: #0a0e1a;
-    padding: 12px 24px;
-    font-size: 16px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.capture-photo-btn:hover {
+    background: #00cc6a;
+}
+
+.switch-camera-btn {
+    background: #ffd000;
+    color: #0a0e1a;
     font-weight: bold;
 }
 
 .close-camera-btn {
     background: #ff3d5a;
-    padding: 12px 24px;
-    font-size: 16px;
+    color: white;
 }
 
 .top-assets {
@@ -527,6 +558,18 @@ input, select {
     background: #00e5c0;
     color: #0a0e1a;
 }
+
+@media (max-width: 768px) {
+    .camera-controls button {
+        padding: 10px 16px;
+        font-size: 14px;
+        min-width: 100px;
+    }
+    
+    .capture-photo-btn {
+        font-size: 16px;
+    }
+}
 </style>
 </head>
 <body>
@@ -599,8 +642,9 @@ input, select {
             <h3>📸 Capturar Grafico</h3>
             
             <button class="camera-btn" id="openCameraBtn" style="width: 100%; padding: 12px; font-size: 14px;">
-                📷 ABRIR CAMERA PARA CAPTURA
+                📷 ABRIR CAMERA CELULAR
             </button>
+            <button id="switchCameraBtn" style="width: 100%; margin-top: 5px; display: none;">🔄 Trocar Camera (Frente/Traseira)</button>
             
             <div class="upload-area" id="dropArea">
                 <div class="upload-icon">📂</div>
@@ -680,12 +724,15 @@ input, select {
     </div>
 </div>
 
-<!-- Modal da Camera -->
+<!-- Modal da Camera do Celular -->
 <div id="cameraModal" class="video-preview">
-    <video id="cameraVideo" autoplay playsinline></video>
+    <div class="video-container">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+    </div>
     <canvas id="cameraCanvas" style="display: none;"></canvas>
-    <div class="video-controls">
-        <button class="capture-btn" id="capturePhotoBtn">📸 CAPTURAR FOTO</button>
+    <div class="camera-controls">
+        <button class="capture-photo-btn" id="capturePhotoBtn">📸 TIRAR FOTO</button>
+        <button class="switch-camera-btn" id="switchCameraBtnModal">🔄 TROCAR CAMERA</button>
         <button class="close-camera-btn" id="closeCameraBtn">❌ FECHAR</button>
     </div>
 </div>
@@ -713,7 +760,10 @@ let currentSelectedAsset = "EUR/USD";
 let autoSignalEnabled = false;
 let autoSignalInterval = null;
 let currentStrategy = "trend";
+
+// Variaveis da Camera
 let videoStream = null;
+let currentFacingMode = "environment"; // environment = tras, user = frente
 
 // ==================== PARES DE ATIVOS ====================
 const OPEN_MARKET_PAIRS = [
@@ -761,7 +811,7 @@ async function fetchForexRateData() {
     }
 }
 
-// ==================== ANALISE DE ATIVOS COM ESTRATEGIA ====================
+// ==================== ANALISE DE ATIVOS ====================
 function analyzeAssetWithStrategy(pair, strategy) {
     const now = new Date();
     const minuteSeed = now.getMinutes();
@@ -901,23 +951,74 @@ function compressImage(dataUrl, maxWidth = 800, maxHeight = 600, quality = 0.6) 
     });
 }
 
-// ==================== CAMERA ====================
-async function captureFromCamera() {
+// ==================== FUNCOES DA CAMERA DO CELULAR ====================
+async function startCamera() {
     const video = document.getElementById('cameraVideo');
     const modal = document.getElementById('cameraModal');
     
     try {
-        modal.classList.add('active');
-        videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Para camera do celular - suporte frontal e traseira
+        const constraints = {
+            video: {
+                facingMode: { exact: currentFacingMode },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            }
+        };
+        
+        // Tenta com facingMode exato
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (err) {
+            // Se falhar, tenta sem facingMode exato
+            console.log("Tentando sem facingMode exato...");
+            const fallbackConstraints = {
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+            videoStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        }
+        
         video.srcObject = videoStream;
         await video.play();
+        
+        modal.classList.add('active');
+        
     } catch(err) { 
+        console.error("Erro camera:", err);
         showToast('Erro ao acessar camera: ' + err.message, 'error');
-        modal.classList.remove('active');
+        
+        // Tenta com configuracao padrao
+        try {
+            const defaultConstraints = { video: true };
+            videoStream = await navigator.mediaDevices.getUserMedia(defaultConstraints);
+            video.srcObject = videoStream;
+            await video.play();
+            modal.classList.add('active');
+        } catch(e) {
+            showToast('Nao foi possivel acessar a camera do celular', 'error');
+        }
     }
 }
 
-async function takePhoto() {
+async function switchCamera() {
+    // Troca entre camera frontal e traseira
+    currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+    
+    // Para o stream atual
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Reinicia a camera com novo modo
+    await startCamera();
+    showToast(`Camera ${currentFacingMode === "environment" ? "TRASEIRA" : "FRONTAL"} ativada`);
+}
+
+async function capturePhoto() {
     playClickSound();
     
     const video = document.getElementById('cameraVideo');
@@ -929,26 +1030,39 @@ async function takePhoto() {
     }
     
     try {
+        // Configura o canvas com o tamanho exato do video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
         
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        const compressed = await compressImage(dataUrl, 800, 600, 0.7);
+        // Desenha o frame atual do video no canvas
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+        // Converte para dataURL
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Comprime a imagem
+        const compressed = await compressImage(dataUrl, 1024, 768, 0.7);
+        
+        // Salva a imagem capturada
         currentImageData = compressed;
         currentImageSource = 'camera';
         
+        // Mostra preview
         document.getElementById('preview').src = compressed;
         document.getElementById('previewContainer').style.display = 'block';
-        document.getElementById('imageStatus').innerHTML = `✅ Foto capturada pela camera!`;
+        document.getElementById('imageStatus').innerHTML = `✅ Foto capturada pela camera do celular!`;
         
         showToast('📸 Foto capturada com sucesso!');
+        
+        // Fecha a camera
         closeCamera();
         
+        // Gera sinal automaticamente apos capturar
         setTimeout(() => generateSignal(true), 500);
         
     } catch(err) {
+        console.error("Erro ao capturar:", err);
         showToast('Erro ao capturar foto: ' + err.message, 'error');
     }
 }
@@ -1076,7 +1190,7 @@ async function generateSignal(isManual = false) {
     const expiryTime = new Date(entryTime);
     expiryTime.setMinutes(entryTime.getMinutes() + 1);
     
-    const forexData = await fetchForexRateData();
+    await fetchForexRateData();
     const signal = analyzeRealSignal(pair, isManual);
     
     if (signal.type !== 'NO') {
@@ -1116,10 +1230,9 @@ async function generateSignal(isManual = false) {
     totalSignals++;
     document.getElementById('totalSignals').textContent = totalSignals;
     
-    const signalValue = signal.type === 'CALL' ? 1 : (signal.type === 'PUT' ? -1 : 0);
-    showToast(`${isManual ? '🎮 SINAL MANUAL' : '🤖 SINAL'} | ${signal.type} ${pair} | Prob: ${signal.probability}% | ${signal.type !== 'NO' ? 'ENTRAR AGORA' : 'AGUARDAR'}`, 'success');
+    showToast(`${isManual ? '🎮 SINAL MANUAL' : '🤖 SINAL'} | ${signal.type} ${pair} | Prob: ${signal.probability}%`, 'success');
     
-    return { signal: signalValue, pair, probability: signal.probability };
+    return { signal: signal.type, pair, probability: signal.probability };
 }
 
 function addToLog(time, type, probability, pair, isManual = false) {
@@ -1388,8 +1501,9 @@ function showToast(message, type = 'info') {
 
 // ==================== EVENT LISTENERS ====================
 function setupEventListeners() {
-    document.getElementById('openCameraBtn').onclick = () => captureFromCamera();
-    document.getElementById('capturePhotoBtn').onclick = () => takePhoto();
+    document.getElementById('openCameraBtn').onclick = () => startCamera();
+    document.getElementById('capturePhotoBtn').onclick = () => capturePhoto();
+    document.getElementById('switchCameraBtnModal').onclick = () => switchCamera();
     document.getElementById('closeCameraBtn').onclick = () => closeCamera();
     document.getElementById('toggleAutoSignalBtn').onclick = () => toggleAutoSignal();
     document.getElementById('strategyTrend').onclick = () => setStrategy('trend');
@@ -1465,14 +1579,11 @@ async function init() {
     document.getElementById('currentSelectedAsset').innerHTML = currentSelectedAsset;
     document.getElementById('pairSelect').value = currentSelectedAsset;
     
-    showToast('✅ Sistema pronto para operar em CONTA REAL | Selecione um ativo e ative o sinal automatico');
+    showToast('✅ Sistema pronto | Use a camera do celular para capturar graficos');
 }
 
 window.selectBankImage = selectBankImage;
 window.removeFromBank = removeFromBank;
-window.captureFromCamera = captureFromCamera;
-window.takePhoto = takePhoto;
-window.closeCamera = closeCamera;
 window.selectAssetFromTop = selectAssetFromTop;
 
 init();
